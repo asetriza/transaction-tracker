@@ -1,0 +1,72 @@
+openapi: 3.0.2
+info:
+  title: Processing and Saving Incoming Requests API
+  description: An API for processing and saving incoming requests from providers
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+  /transactions:
+    post:
+      operationId: CreateTransaction
+      summary: Process and save an incoming request
+      tags:
+        - transaction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaction'
+      responses:
+        '200':
+          description: The request was processed and saved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          description: The request was invalid or missing required fields
+        '500':
+          description: An error occurred while processing the request
+      parameters:
+        - $ref: '#/components/parameters/SourceType'
+
+components:
+  schemas:
+    Transaction:
+      type: object
+      properties:
+        state:
+          type: string
+          description: The state of the request (win or lost)
+          enum:
+            - Win
+            - Lost
+          example: Win
+        amount:
+          type: number
+          description: The amount of the request
+          example: 10.15
+        transactionId:
+          type: string
+          description: The transaction ID of the request
+          example: some generated identificator
+      required:
+        - state
+        - amount
+        - transactionId
+
+  parameters:
+    SourceType:
+      name: Source-Type
+      in: header
+      description: The type of source that the request came from (game, server, or payment)
+      required: true
+      schema:
+        type: string
+        enum:
+          - game
+          - server
+          - payment
+      example: game
