@@ -47,6 +47,10 @@ components:
     Transaction:
       type: object
       properties:
+        accountId:
+          type: integer
+          description: The account ID of the transaction
+          example: 1
         state:
           type: string
           description: The state of the request (win or lost)
@@ -63,6 +67,7 @@ components:
           description: The transaction ID of the request
           example: some generated identificator
       required:
+        - accountId
         - state
         - amount
         - transactionId

@@ -1,17 +1,20 @@
 package domain
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type State int
 
 const (
-	Win State = iota
-	Lost
+	StateWin State = iota
+	StateLost
 )
 
 var stateNames = map[State]string{
-	Win:  "Win",
-	Lost: "Lost",
+	StateWin:  "Win",
+	StateLost: "Lost",
 }
 
 func (s State) String() string {
@@ -27,12 +30,16 @@ func StringToState(s string) (State, error) {
 	return 0, fmt.Errorf("invalid state: %s", s)
 }
 
-type ID string
+type TransactionID string
 
 type Transaction struct {
+	ID            int
+	TransactionID TransactionID
+	AccountID     int
 	State         State
 	Amount        float64
-	TransactionID ID
+	IsCanceled    bool
+	CreatedAt     time.Time
 }
 
 func (t Transaction) Validate() error {

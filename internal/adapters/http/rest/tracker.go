@@ -28,14 +28,16 @@ func toDomainTransaction(tr models.Transaction) (domain.Transaction, error) {
 	}
 
 	return domain.Transaction{
+		AccountID:     tr.AccountId,
 		State:         state,
 		Amount:        tr.Amount,
-		TransactionID: domain.ID(tr.TransactionId),
+		TransactionID: domain.TransactionID(tr.TransactionId),
 	}, nil
 }
 
 func fromDomainTransaction(tr domain.Transaction) *models.Transaction {
 	return &models.Transaction{
+		AccountId:     tr.AccountID,
 		State:         models.TransactionState(tr.State.String()),
 		Amount:        tr.Amount,
 		TransactionId: string(tr.TransactionID),

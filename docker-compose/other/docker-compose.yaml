@@ -20,6 +20,24 @@ services:
     depends_on:
       - postgresdb
 
+  worker:
+    container_name: worker_container
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_HOST=${DB_HOST}
+      - DATABASE_PORT=${DB_PORT}
+    tty: true
+    env_file:
+      - .env
+    image: cancel-transaction-worker:latest
+    restart: on-failure
+    volumes:
+      - .:/app
+    depends_on:
+      - postgresdb
+
   postgresdb:
     image: postgres:latest
     container_name: postgres_container

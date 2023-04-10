@@ -4,11 +4,17 @@ generate:
 buildx:
 	docker build --platform=linux/amd64 -t tracker:latest . -f docker/macos/arm64/Dockerfile
 
+buildxworker:
+	docker build --platform=linux/amd64 -t cancel-transaction-worker:latest . -f docker/macos/arm64/cancel-transaction-worker/Dockerfile
+
 runx:
 	docker run -d -p 8080:8080 --platform=linux/amd64 tracker:latest
 
 build:
 	docker build -t tracker:latest . -f docker/other/Dockerfile
+
+buildworker:
+	docker build -t cancel-transaction-worker:latest . -f docker/other/cancel-transaction-worker/Dockerfile
 
 run:
 	docker run -d -p 8080:8080 --platform=linux/amd64 tracker:latest
