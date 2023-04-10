@@ -3,18 +3,20 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/go-faster/errors"
+	"github.com/go-faster/jx"
 )
+
+func (s *ErrorStatusCode) Error() string {
+	return fmt.Sprintf("code %d: %+v", s.StatusCode, s.Response)
+}
 
 // CreateTransactionBadRequest is response for CreateTransaction operation.
 type CreateTransactionBadRequest struct{}
 
 func (*CreateTransactionBadRequest) createTransactionRes() {}
-
-// CreateTransactionInternalServerError is response for CreateTransaction operation.
-type CreateTransactionInternalServerError struct{}
-
-func (*CreateTransactionInternalServerError) createTransactionRes() {}
 
 type CreateTransactionSourceType string
 
@@ -53,6 +55,117 @@ func (s *CreateTransactionSourceType) UnmarshalText(data []byte) error {
 	default:
 		return errors.Errorf("invalid value: %q", data)
 	}
+}
+
+// Ref: #/components/schemas/Error
+type Error struct {
+	Message string       `json:"message"`
+	Data    OptErrorData `json:"data"`
+}
+
+// GetMessage returns the value of Message.
+func (s *Error) GetMessage() string {
+	return s.Message
+}
+
+// GetData returns the value of Data.
+func (s *Error) GetData() OptErrorData {
+	return s.Data
+}
+
+// SetMessage sets the value of Message.
+func (s *Error) SetMessage(val string) {
+	s.Message = val
+}
+
+// SetData sets the value of Data.
+func (s *Error) SetData(val OptErrorData) {
+	s.Data = val
+}
+
+func (*Error) createTransactionRes() {}
+
+type ErrorData map[string]jx.Raw
+
+func (s *ErrorData) init() ErrorData {
+	m := *s
+	if m == nil {
+		m = map[string]jx.Raw{}
+		*s = m
+	}
+	return m
+}
+
+// ErrorStatusCode wraps Error with StatusCode.
+type ErrorStatusCode struct {
+	StatusCode int
+	Response   Error
+}
+
+// GetStatusCode returns the value of StatusCode.
+func (s *ErrorStatusCode) GetStatusCode() int {
+	return s.StatusCode
+}
+
+// GetResponse returns the value of Response.
+func (s *ErrorStatusCode) GetResponse() Error {
+	return s.Response
+}
+
+// SetStatusCode sets the value of StatusCode.
+func (s *ErrorStatusCode) SetStatusCode(val int) {
+	s.StatusCode = val
+}
+
+// SetResponse sets the value of Response.
+func (s *ErrorStatusCode) SetResponse(val Error) {
+	s.Response = val
+}
+
+// NewOptErrorData returns new OptErrorData with value set to v.
+func NewOptErrorData(v ErrorData) OptErrorData {
+	return OptErrorData{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptErrorData is optional ErrorData.
+type OptErrorData struct {
+	Value ErrorData
+	Set   bool
+}
+
+// IsSet returns true if OptErrorData was set.
+func (o OptErrorData) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptErrorData) Reset() {
+	var v ErrorData
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptErrorData) SetTo(v ErrorData) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptErrorData) Get() (v ErrorData, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptErrorData) Or(d ErrorData) ErrorData {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
 }
 
 // Ref: #/components/schemas/Transaction

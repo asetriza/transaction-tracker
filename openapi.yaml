@@ -10,6 +10,8 @@ paths:
     post:
       operationId: CreateTransaction
       summary: Process and save an incoming request
+      parameters:
+        - $ref: '#/components/parameters/SourceType'
       tags:
         - transaction
       requestBody:
@@ -29,8 +31,16 @@ paths:
           description: The request was invalid or missing required fields
         '500':
           description: An error occurred while processing the request
-      parameters:
-        - $ref: '#/components/parameters/SourceType'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: An unexpected error occurred while processing the request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 components:
   schemas:
@@ -56,6 +66,18 @@ components:
         - state
         - amount
         - transactionId
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        message:
+          type: string
+          example: Internal server error
+        data:
+          type: object
+          additionalProperties: true
 
   parameters:
     SourceType:

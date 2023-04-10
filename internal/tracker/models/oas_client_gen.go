@@ -24,8 +24,12 @@ type Client struct {
 	serverURL *url.URL
 	baseClient
 }
+type errorHandler interface {
+	NewError(ctx context.Context, err error) *ErrorStatusCode
+}
 
 var _ Handler = struct {
+	errorHandler
 	*Client
 }{}
 

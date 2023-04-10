@@ -31,13 +31,43 @@ func encodeCreateTransactionResponse(response CreateTransactionRes, w http.Respo
 
 		return nil
 
-	case *CreateTransactionInternalServerError:
+	case *Error:
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(500)
 		span.SetStatus(codes.Error, http.StatusText(500))
 
+		e := jx.GetEncoder()
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
 		return nil
 
 	default:
 		return errors.Errorf("unexpected response type: %T", response)
 	}
+}
+
+func encodeErrorResponse(response *ErrorStatusCode, w http.ResponseWriter, span trace.Span) error {
+	w.Header().Set("Content-Type", "application/json")
+	code := response.StatusCode
+	if code == 0 {
+		// Set default status code.
+		code = http.StatusOK
+	}
+	w.WriteHeader(code)
+	st := http.StatusText(code)
+	if code >= http.StatusBadRequest {
+		span.SetStatus(codes.Error, st)
+	} else {
+		span.SetStatus(codes.Ok, st)
+	}
+
+	e := jx.GetEncoder()
+	response.Response.Encode(e)
+	if _, err := e.WriteTo(w); err != nil {
+		return errors.Wrap(err, "write")
+	}
+	return nil
+
 }

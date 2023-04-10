@@ -14,6 +14,10 @@ type Handler interface {
 	//
 	// POST /transactions
 	CreateTransaction(ctx context.Context, req *Transaction, params CreateTransactionParams) (CreateTransactionRes, error)
+	// NewError creates *ErrorStatusCode from error returned by handler.
+	//
+	// Used for common default response.
+	NewError(ctx context.Context, err error) *ErrorStatusCode
 }
 
 // Server implements http server based on OpenAPI v3 specification and

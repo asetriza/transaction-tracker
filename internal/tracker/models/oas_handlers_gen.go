@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-faster/errors"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 	"go.opentelemetry.io/otel/trace"
 
+	ht "github.com/ogen-go/ogen/http"
 	"github.com/ogen-go/ogen/middleware"
 	"github.com/ogen-go/ogen/ogenerrors"
 	"github.com/ogen-go/ogen/otelogen"
@@ -123,7 +125,15 @@ func (s *Server) handleCreateTransactionRequest(args [0]string, argsEscaped bool
 	}
 	if err != nil {
 		recordError("Internal", err)
-		s.cfg.ErrorHandler(ctx, w, r, err)
+		if errRes, ok := errors.Into[*ErrorStatusCode](err); ok {
+			encodeErrorResponse(errRes, w, span)
+			return
+		}
+		if errors.Is(err, ht.ErrNotImplemented) {
+			s.cfg.ErrorHandler(ctx, w, r, err)
+			return
+		}
+		encodeErrorResponse(s.h.NewError(ctx, err), w, span)
 		return
 	}
 
