@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/asetriza/transaction-tracker/internal/tracker/domain"
+	"github.com/asetriza/transaction-tracker/internal/domain"
 	"github.com/lib/pq"
 )
 

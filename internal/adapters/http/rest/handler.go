@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	models "github.com/asetriza/transaction-tracker/internal/tracker/models"
-	"github.com/asetriza/transaction-tracker/internal/tracker/usecase/tracker"
+	models "github.com/asetriza/transaction-tracker/internal/models"
+	"github.com/asetriza/transaction-tracker/internal/usecase/tracker"
 )
 
 type Handler struct {

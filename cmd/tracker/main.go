@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/asetriza/transaction-tracker/internal/tracker/adapters/http/rest"
-	"github.com/asetriza/transaction-tracker/internal/tracker/app"
-	models "github.com/asetriza/transaction-tracker/internal/tracker/models"
-	"github.com/asetriza/transaction-tracker/internal/tracker/repository/postgresql"
-	"github.com/asetriza/transaction-tracker/internal/tracker/usecase/tracker"
+	"github.com/asetriza/transaction-tracker/internal/adapters/http/rest"
+	app "github.com/asetriza/transaction-tracker/internal/app/tracker"
+	models "github.com/asetriza/transaction-tracker/internal/models"
+	"github.com/asetriza/transaction-tracker/internal/repository/postgresql"
+	"github.com/asetriza/transaction-tracker/internal/usecase/tracker"
 
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"

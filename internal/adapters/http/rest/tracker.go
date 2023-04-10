@@ -3,8 +3,8 @@ package rest
 import (
 	"context"
 
-	"github.com/asetriza/transaction-tracker/internal/tracker/domain"
-	models "github.com/asetriza/transaction-tracker/internal/tracker/models"
+	"github.com/asetriza/transaction-tracker/internal/domain"
+	models "github.com/asetriza/transaction-tracker/internal/models"
 )
 
 func (h Handler) CreateTransaction(ctx context.Context, req *models.Transaction, params models.CreateTransactionParams) (models.CreateTransactionRes, error) {

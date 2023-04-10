@@ -3,7 +3,7 @@ package tracker
 import (
 	"context"
 
-	"github.com/asetriza/transaction-tracker/internal/tracker/domain"
+	"github.com/asetriza/transaction-tracker/internal/domain"
 )
 
 type Repository interface {

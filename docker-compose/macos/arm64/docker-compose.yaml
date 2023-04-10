@@ -42,7 +42,7 @@ services:
     container_name: flyway_container
     volumes:
       - ${PWD}/migrations:/flyway/sql
-      - ${PWD}/docker-flyway.config:/flyway/conf/flyway.config
+      - ${PWD}/configs/docker-flyway.config:/flyway/conf/flyway.config
     env_file:
       - .env
     command: -configFiles=/flyway/conf/flyway.config -locations=filesystem:/flyway/sql -connectRetries=60 migrate
