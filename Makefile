@@ -1,3 +1,6 @@
+install:
+	go install -a
+
 generate:
 	go generate ./...
 
@@ -21,6 +24,10 @@ buildworker:
 
 run:
 	docker run -d -p 8080:8080 --platform=linux/amd64 tracker:latest
+
+buildprojectx: install generate test buildx buildxworker
+
+buildproject: install generate test build buildworker
 
 composeupx:
 	docker-compose --file docker-compose/macos/arm64/docker-compose.yaml up

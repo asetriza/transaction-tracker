@@ -20,23 +20,57 @@ NOTE! I strongly recommend you to run this app on MacBooks with M1, M2 etc. proc
 
 For more details see corresponding titles for each command and step
 
-### Generating models from openapi.yaml
+## Build the project in one command
 
-1. First, run the following command to generate any necessary files:
+This command builds both the tracker and cancel-transaction-worker services for the specified platform linux/amd64 and tag latest.
+It first runs the install, generate, test, buildx, and buildxworker commands.
 
 ```bash
-go install -a
+make buildprojectx
 ```
 
-then
+## Stage by stage commands
+
+1. Installing dependencies
+2. Generating models from openapi.yaml
+3. Testing the app
+4. Building the app
+    - Main service
+    - Worker app
+5. Running the App
+6. Stopping the App
+
+### Installing dependencies
+
+
+
+```bash
+make install
+```
+
+### Generating models from openapi.yaml
+
+- First, run the following command to generate any necessary files:
 
 ```bash
 make generate
 ```
 
+### Testing the App
+
+This command runs the go test command
+
+```bash
+make test
+```
+
 ### Building the app
 
-2. Then, we need to build 2 docker images to run it with docker-compose
+- We need to build 2 docker images to run it with docker-compose
+1. Main service
+2. Worker app
+
+#### Main service
 
 - for main tracker application which serves HTTP requests
 - to make a request to service you can use openapi.yaml specification
@@ -47,7 +81,9 @@ make generate
 make buildx
 ```
 
-- for post-processing worker which according to task should
+#### Worker app
+
+- Post-processing worker
 - every N minutes 10 latest odd records must be canceled and balance should be corrected by the application.
 - by default N is set to 1 minute
 - to set minutes go to cmd/cancel-transaction-worker/main.go where s.Every($minutes).Minute() $minutes to N
@@ -58,7 +94,7 @@ make buildxworker
 
 ### Running the App
 
-3. To launch, we need to run docker-compose, this will launch PostgreSQL database and apply migrations to start sending requests
+- To launch, we need to run docker-compose, this will launch PostgreSQL database and apply migrations to start sending requests
 
 ```bash
 make composeupx
@@ -66,7 +102,7 @@ make composeupx
 
 ### Stopping the App
 
-4. To stop, we need to run docker-compose, this will stop application and database
+- To stop, we need to run docker-compose, this will stop application and database
 
 ```bash
 make composedownx
@@ -88,6 +124,26 @@ This will build a Docker image tagged tracker:latest based on the Dockerfile at 
 
 ```bash
 make build
+```
+
+This will build a Docker image tagged tracker:latest based on the Dockerfile at docker/other/Dockerfile.
+
+## Building the Worker
+
+To build the worker, run:
+
+- For MacOS under M1, M2 processors (*tested on MacBook Air M2*)
+
+```bash
+make buildxworker
+```
+
+This will build a Docker image tagged tracker:latest based on the Dockerfile at docker/macos/arm64/Dockerfile.
+
+- For other platforms (not tested due to lack of other platforms on hand)
+
+```bash
+make buildworker
 ```
 
 This will build a Docker image tagged tracker:latest based on the Dockerfile at docker/other/Dockerfile.
