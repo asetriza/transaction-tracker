@@ -10,22 +10,12 @@ import (
 )
 
 func (p PostgreSQL) CreateTransaction(ctx context.Context, tr domain.Transaction) (domain.Transaction, error) {
-	// query := `INSERT INTO transactions (transaction_id, account_id, state, amount, is_canceled, created_at) VALUES ($1, $2, $3, $4, $5, $6)`
-
-	// _, err := p.db.ExecContext(ctx, query, tr.TransactionID, tr.AccountID, tr.State, tr.Amount, tr.IsCanceled, time.Now())
-	// if err != nil {
-	// 	if pgErr, ok := err.(*pq.Error); ok {
-	// 		return domain.Transaction{}, fmt.Errorf("PostgreSQL error: %s", pgErr.Message)
-	// 	}
-	// 	return domain.Transaction{}, fmt.Errorf("database error: %s", err)
-	// }
-
 	tx, err := p.db.Begin()
 	if err != nil {
 		return domain.Transaction{}, err
 	}
 
-	stmt, err := tx.Prepare("INSERT INTO transactions (transaction_id, account_id, state, amount, created_at) VALUES (?, ?, ?, ?, now())")
+	stmt, err := tx.Prepare("INSERT INTO transactions (transaction_id, account_id, state, amount, created_at) VALUES ($1, $2, $3, $4, now())")
 	if err != nil {
 		return domain.Transaction{}, err
 	}
@@ -48,7 +38,7 @@ func (p PostgreSQL) CreateTransaction(ctx context.Context, tr domain.Transaction
 		return domain.Transaction{}, err
 	}
 
-	stmt, err = tx.Prepare("UPDATE accounts SET balance = balance + ? WHERE id = ?")
+	stmt, err = tx.Prepare("UPDATE accounts SET balance = balance + $1 WHERE id = $2")
 	if err != nil {
 		tx.Rollback()
 		return domain.Transaction{}, err
@@ -143,15 +133,11 @@ func (r PostgreSQL) MarkAsCanceled(transaction domain.Transaction) error {
 }
 
 func (r PostgreSQL) CreateAccount(ctx context.Context, acc domain.Account) (domain.Account, error) {
-	stmt, err := r.db.PrepareContext(ctx, "INSERT INTO accounts (balance) VALUES (?) RETURNING id, balance")
-	if err != nil {
-		return domain.Account{}, err
-	}
-	defer stmt.Close()
-
 	account := domain.Account{}
-	err = stmt.QueryRowContext(ctx, acc.Balance).Scan(&account.ID, &account.Balance)
+	err := r.db.QueryRowContext(ctx, "INSERT INTO accounts (balance) VALUES ($1) RETURNING id, balance", acc.Balance).
+		Scan(&acc.ID, &acc.Balance)
 	if err != nil {
+		log.Println("queryrow error", err.Error())
 		return domain.Account{}, err
 	}
 

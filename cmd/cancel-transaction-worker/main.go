@@ -21,7 +21,7 @@ func main() {
 	account := account.NewAccount(repo)
 	transaction := transaction.NewTransactionService(repo, account)
 
-	s.Every(3).Minute().Do(func() {
+	s.Every(1).Minute().Do(func() {
 		err := transaction.CancelLatestOddRecords(10)
 		if err != nil {
 			log.Printf("error canceling latest odd records %s", err)
