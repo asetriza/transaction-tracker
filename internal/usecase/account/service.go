@@ -7,6 +7,6 @@ import (
 )
 
 type Service interface {
-	UpdateBalance(id int, amount float64) error
-	CreateAccount(ctx context.Context, account domain.Account) (domain.Account, error)
+	UpdateBalance(ctx context.Context, id int, amount float64) error
+	Create(ctx context.Context, account domain.Account) (domain.Account, error)
 }

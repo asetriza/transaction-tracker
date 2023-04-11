@@ -13,7 +13,7 @@ func (h Handler) CreateTransaction(ctx context.Context, req *models.Transaction,
 		return nil, err
 	}
 
-	transaction, err := h.tracker.CreateTransaction(ctx, dTransaction)
+	transaction, err := h.transaction.Create(ctx, dTransaction)
 	if err != nil {
 		return &models.Transaction{}, err
 	}

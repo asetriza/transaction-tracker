@@ -6,21 +6,21 @@ import (
 
 	models "github.com/asetriza/transaction-tracker/internal/models"
 	"github.com/asetriza/transaction-tracker/internal/usecase/account"
-	"github.com/asetriza/transaction-tracker/internal/usecase/tracker"
+	"github.com/asetriza/transaction-tracker/internal/usecase/transaction"
 )
 
 type Handler struct {
-	tracker tracker.Service
-	account account.Service
+	transaction transaction.Service
+	account     account.Service
 }
 
 func NewHandler(
-	tracker tracker.Service,
+	transaction transaction.Service,
 	account account.Service,
 ) Handler {
 	return Handler{
-		tracker: tracker,
-		account: account,
+		transaction: transaction,
+		account:     account,
 	}
 }
 

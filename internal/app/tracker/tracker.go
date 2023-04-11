@@ -11,53 +11,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// func Run() error {
-// 	dbConfig := postgresql.NewDBConfig()
-// 	repo, err := postgresql.NewClient(dbConfig)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	service := tracker.NewTracker(repo)
-// 	handler := rest.NewHandler(service)
-// 	srv, err := models.NewServer(handler)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	if err := http.ListenAndServe(os.Getenv("PORT"), srv); err != nil {
-// 		return err
-// 	}
-
-// 	srvs := rest.NewServer(os.Getenv("PORT"), srv)
-
-// 	go func() {
-// 		if err := srv.Run(); !errors.Is(err, http.ErrServerClosed) {
-// 			log.Println(err)
-// 		}
-// 	}()
-
-// 	log.Println("Server started")
-
-// 	quit := make(chan os.Signal, 1)
-// 	signal.Notify(quit, syscall.SIGTERM, syscall.SIGINT)
-// 	<-quit
-
-// 	const timeout = 5 * time.Second
-// 	ctx, shutdown := context.WithTimeout(context.Background(), timeout)
-// 	defer shutdown()
-
-// 	if err := srv.(ctx); err != nil {
-// 		return fmt.Errorf("failed to stop server: %v", err)
-// 	}
-
-// 	if err := conn.Close(); err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-
-// 	return nil
-// }
-
 const EnvLogLevel = "LOG_LEVEL"
 
 const (

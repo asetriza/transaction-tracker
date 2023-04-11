@@ -7,30 +7,32 @@ import (
 )
 
 type AccountRepository interface {
-	FindById(id int) (domain.Account, error)
-	UpdateBalance(account domain.Account) error
-	CreateAccount(ctx context.Context, account domain.Account) (domain.Account, error)
+	FindById(ctx context.Context, id int) (domain.Account, error)
+	UpdateBalance(ctx context.Context, account domain.Account) error
+	Create(ctx context.Context, account domain.Account) (domain.Account, error)
 }
 
-type Account struct {
+type AccountService struct {
 	repo AccountRepository
 }
 
-func NewAccount(repo AccountRepository) Account {
-	return Account{repo}
+func NewAccountService(
+	repo AccountRepository,
+) AccountService {
+	return AccountService{repo}
 }
 
-func (s Account) UpdateBalance(id int, amount float64) error {
-	account, err := s.repo.FindById(id)
+func (s AccountService) UpdateBalance(ctx context.Context, id int, amount float64) error {
+	account, err := s.repo.FindById(ctx, id)
 	if err != nil {
 		return err
 	}
 
 	account.Balance += amount
 
-	return s.repo.UpdateBalance(account)
+	return s.repo.UpdateBalance(ctx, account)
 }
 
-func (s Account) CreateAccount(ctx context.Context, account domain.Account) (domain.Account, error) {
-	return s.repo.CreateAccount(ctx, account)
+func (s AccountService) Create(ctx context.Context, account domain.Account) (domain.Account, error) {
+	return s.repo.Create(ctx, account)
 }

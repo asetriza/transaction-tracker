@@ -1,16 +1,23 @@
-package postgresql
+package transactionrepo
 
 import (
 	"context"
-	"database/sql"
 	"errors"
-	"log"
 
 	"github.com/asetriza/transaction-tracker/internal/domain"
+	"github.com/asetriza/transaction-tracker/internal/repository/postgresql"
 )
 
-func (p PostgreSQL) CreateTransaction(ctx context.Context, tr domain.Transaction) (domain.Transaction, error) {
-	tx, err := p.db.Begin()
+type transactionRepo struct {
+	postgresql.Client
+}
+
+func New(client postgresql.Client) transactionRepo {
+	return transactionRepo{client}
+}
+
+func (tr transactionRepo) Create(ctx context.Context, transaction domain.Transaction) (domain.Transaction, error) {
+	tx, err := tr.DB.Begin()
 	if err != nil {
 		return domain.Transaction{}, err
 	}
@@ -21,7 +28,12 @@ func (p PostgreSQL) CreateTransaction(ctx context.Context, tr domain.Transaction
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(tr.TransactionID, tr.AccountID, tr.State, tr.Amount)
+	res, err := stmt.Exec(
+		transaction.TransactionID,
+		transaction.AccountID,
+		transaction.State,
+		transaction.Amount,
+	)
 	if err != nil {
 		tx.Rollback()
 		return domain.Transaction{}, err
@@ -45,7 +57,14 @@ func (p PostgreSQL) CreateTransaction(ctx context.Context, tr domain.Transaction
 	}
 	defer stmt.Close()
 
-	res, err = stmt.Exec(tr.Amount, tr.AccountID)
+	switch transaction.State {
+	case domain.StateWin:
+		transaction.Amount = +transaction.Amount
+	case domain.StateLost:
+		transaction.Amount = -transaction.Amount
+	}
+
+	res, err = stmt.Exec(transaction.Amount, transaction.AccountID)
 	if err != nil {
 		tx.Rollback()
 		return domain.Transaction{}, err
@@ -64,13 +83,13 @@ func (p PostgreSQL) CreateTransaction(ctx context.Context, tr domain.Transaction
 
 	err = tx.Commit()
 	if err != nil {
-		log.Fatal(err)
+		return domain.Transaction{}, err
 	}
 
-	return tr, nil
+	return transaction, nil
 }
 
-func (r PostgreSQL) FindLatestOddRecords(limit int) ([]domain.Transaction, error) {
+func (r transactionRepo) FindLatestOddRecords(ctx context.Context, limit int) ([]domain.Transaction, error) {
 	query := `
 		SELECT id, transaction_id, account_id, state, amount, created_at
 		FROM transactions
@@ -79,7 +98,7 @@ func (r PostgreSQL) FindLatestOddRecords(limit int) ([]domain.Transaction, error
 		LIMIT $1
 	`
 
-	rows, err := r.db.Query(query, limit)
+	rows, err := r.DB.QueryContext(ctx, query, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -108,14 +127,14 @@ func (r PostgreSQL) FindLatestOddRecords(limit int) ([]domain.Transaction, error
 	return transactions, nil
 }
 
-func (r PostgreSQL) MarkAsCanceled(transaction domain.Transaction) error {
+func (tr transactionRepo) MarkAsCanceled(ctx context.Context, transaction domain.Transaction) error {
 	query := `
 		UPDATE transactions
 		SET is_canceled = True
 		WHERE id = $1
 	`
 
-	result, err := r.db.Exec(query, transaction.ID)
+	result, err := tr.DB.ExecContext(ctx, query, transaction.ID)
 	if err != nil {
 		return err
 	}
@@ -127,52 +146,6 @@ func (r PostgreSQL) MarkAsCanceled(transaction domain.Transaction) error {
 
 	if rowsAffected == 0 {
 		return errors.New("transaction already canceled or not found")
-	}
-
-	return nil
-}
-
-func (r PostgreSQL) CreateAccount(ctx context.Context, acc domain.Account) (domain.Account, error) {
-	account := domain.Account{}
-	err := r.db.QueryRowContext(ctx, "INSERT INTO accounts (balance) VALUES ($1) RETURNING id, balance", acc.Balance).
-		Scan(&acc.ID, &acc.Balance)
-	if err != nil {
-		log.Println("queryrow error", err.Error())
-		return domain.Account{}, err
-	}
-
-	return account, nil
-}
-
-func (r PostgreSQL) FindById(id int) (domain.Account, error) {
-	account := domain.Account{}
-
-	row := r.db.QueryRow("SELECT id, balance FROM accounts WHERE id = $1", id)
-	err := row.Scan(&account.ID, &account.Balance)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return domain.Account{}, domain.ErrAccountNotFound
-		}
-
-		return domain.Account{}, err
-	}
-
-	return account, nil
-}
-
-func (r PostgreSQL) UpdateBalance(account domain.Account) error {
-	result, err := r.db.Exec("UPDATE accounts SET balance = $1 WHERE id = $2", account.Balance, account.ID)
-	if err != nil {
-		return err
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if rowsAffected == 0 {
-		return domain.ErrAccountNotFound
 	}
 
 	return nil

@@ -10,12 +10,12 @@ import (
 func (h Handler) CreateAccount(ctx context.Context, req *models.CreateAccountReq) (models.CreateAccountRes, error) {
 	dAccount := toDomainAccount(*req)
 
-	transaction, err := h.account.CreateAccount(ctx, dAccount)
+	account, err := h.account.Create(ctx, dAccount)
 	if err != nil {
 		return &models.CreateAccountBadRequest{}, err
 	}
 
-	return fromDomainAccount(transaction), nil
+	return fromDomainAccount(account), nil
 }
 
 func toDomainAccount(ac models.CreateAccountReq) domain.Account {

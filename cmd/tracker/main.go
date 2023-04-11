@@ -10,8 +10,10 @@ import (
 	app "github.com/asetriza/transaction-tracker/internal/app/tracker"
 	models "github.com/asetriza/transaction-tracker/internal/models"
 	"github.com/asetriza/transaction-tracker/internal/repository/postgresql"
+	accountrepo "github.com/asetriza/transaction-tracker/internal/repository/postgresql/account-repo"
+	transactionrepo "github.com/asetriza/transaction-tracker/internal/repository/postgresql/transaction-repo"
 	"github.com/asetriza/transaction-tracker/internal/usecase/account"
-	"github.com/asetriza/transaction-tracker/internal/usecase/tracker"
+	"github.com/asetriza/transaction-tracker/internal/usecase/transaction"
 
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -23,14 +25,16 @@ func main() {
 			zap.String("http.addr", os.Getenv("PORT")),
 		)
 
-		dbConfig := postgresql.NewDBConfig()
-		repo, err := postgresql.NewClient(dbConfig)
+		config := postgresql.NewConfig()
+		client, err := postgresql.NewClient(config)
 		if err != nil {
 			return err
 		}
-		service := tracker.NewTracker(repo)
-		accountService := account.NewAccount(repo)
-		handler := rest.NewHandler(service, accountService)
+		accountRepo := accountrepo.New(client)
+		accountService := account.NewAccountService(accountRepo)
+		transactionRepo := transactionrepo.New(client)
+		transactionService := transaction.NewTransactionService(transactionRepo, accountService)
+		handler := rest.NewHandler(transactionService, accountService)
 		oasServer, err := models.NewServer(handler)
 		if err != nil {
 			return err

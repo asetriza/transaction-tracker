@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"context"
 	"log"
 
 	"github.com/asetriza/transaction-tracker/internal/domain"
@@ -8,8 +9,9 @@ import (
 )
 
 type TransactionRepository interface {
-	FindLatestOddRecords(limit int) ([]domain.Transaction, error)
-	MarkAsCanceled(transaction domain.Transaction) error
+	Create(ctx context.Context, transaction domain.Transaction) (domain.Transaction, error)
+	FindLatestOddRecords(ctx context.Context, limit int) ([]domain.Transaction, error)
+	MarkAsCanceled(ctx context.Context, transaction domain.Transaction) error
 }
 
 type TransactionService struct {
@@ -27,8 +29,21 @@ func NewTransactionService(
 	}
 }
 
-func (s TransactionService) CancelLatestOddRecords(limit int) error {
-	transactions, err := s.trRepo.FindLatestOddRecords(limit)
+func (t TransactionService) Create(ctx context.Context, transaction domain.Transaction) (domain.Transaction, error) {
+	if err := transaction.Validate(); err != nil {
+		return domain.Transaction{}, err
+	}
+
+	transaction, err := t.trRepo.Create(ctx, transaction)
+	if err != nil {
+		return domain.Transaction{}, err
+	}
+
+	return transaction, nil
+}
+
+func (s TransactionService) CancelLatestOddRecords(ctx context.Context, limit int) error {
+	transactions, err := s.trRepo.FindLatestOddRecords(ctx, limit)
 	if err != nil {
 		log.Printf("error find latest odd records %s", err)
 		return err
@@ -39,7 +54,7 @@ func (s TransactionService) CancelLatestOddRecords(limit int) error {
 			continue
 		}
 
-		err := s.trRepo.MarkAsCanceled(t)
+		err := s.trRepo.MarkAsCanceled(ctx, t)
 		if err != nil {
 			log.Printf("error mark as canceled %s, %+v", err, t)
 			return err
@@ -53,7 +68,7 @@ func (s TransactionService) CancelLatestOddRecords(limit int) error {
 			amount = +amount
 		}
 
-		err = s.acService.UpdateBalance(t.AccountID, amount)
+		err = s.acService.UpdateBalance(ctx, t.AccountID, amount)
 		if err != nil {
 			log.Printf("error mark as canceled %s, %+v", err, t)
 			// return err

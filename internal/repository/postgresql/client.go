@@ -8,12 +8,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type PostgreSQL struct {
-	db *sql.DB
+type Client struct {
+	DB *sql.DB
 }
 
-func NewClient(cfg DBConfig) (PostgreSQL, error) {
-
+func NewClient(cfg Config) (Client, error) {
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		cfg.Host,
 		cfg.Port,
@@ -25,13 +24,13 @@ func NewClient(cfg DBConfig) (PostgreSQL, error) {
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Printf("Error connecting to database: %s", err)
-		return PostgreSQL{}, err
+		return Client{}, err
 	}
 
 	if err := db.Ping(); err != nil {
 		log.Printf("Error pinging database: %s", err)
-		return PostgreSQL{}, err
+		return Client{}, err
 	}
 
-	return PostgreSQL{db: db}, nil
+	return Client{DB: db}, nil
 }

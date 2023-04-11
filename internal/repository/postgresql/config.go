@@ -2,7 +2,7 @@ package postgresql
 
 import "os"
 
-type DBConfig struct {
+type Config struct {
 	Host     string
 	Port     string
 	User     string
@@ -10,14 +10,14 @@ type DBConfig struct {
 	DBName   string
 }
 
-func NewDBConfig() DBConfig {
+func NewConfig() Config {
 	host := os.Getenv("DATABASE_HOST")
 	port := os.Getenv("DATABASE_PORT")
 	user := os.Getenv("POSTGRES_USER")
 	password := os.Getenv("POSTGRES_PASSWORD")
 	dbName := os.Getenv("POSTGRES_DB")
 
-	return DBConfig{
+	return Config{
 		Host:     host,
 		Port:     port,
 		User:     user,
