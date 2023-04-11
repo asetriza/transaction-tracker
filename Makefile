@@ -1,6 +1,9 @@
 generate:
 	go generate ./...
 
+test:
+	go test ./...
+
 buildx:
 	docker build --platform=linux/amd64 -t tracker:latest . -f docker/macos/arm64/Dockerfile
 

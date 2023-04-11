@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/asetriza/transaction-tracker/internal/domain"
-	"github.com/asetriza/transaction-tracker/internal/usecase/account"
 )
 
 type TransactionRepository interface {
@@ -14,14 +13,19 @@ type TransactionRepository interface {
 	MarkAsCanceled(ctx context.Context, transaction domain.Transaction) error
 }
 
+type AccountService interface {
+	UpdateBalance(ctx context.Context, id int, amount float64) error
+	Create(ctx context.Context, account domain.Account) (domain.Account, error)
+}
+
 type TransactionService struct {
 	trRepo    TransactionRepository
-	acService account.Service
+	acService AccountService
 }
 
 func NewTransactionService(
 	trRepo TransactionRepository,
-	acService account.Service,
+	acService AccountService,
 ) TransactionService {
 	return TransactionService{
 		trRepo:    trRepo,
