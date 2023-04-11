@@ -6,7 +6,7 @@ This is a containerized Golang app that can track and save incoming requests.
 
 ## Prerequisites
 
-- Golang
+- Golang 1.20 version and greater
 - PostgreSQL
 - Docker
 - Docker Compose
