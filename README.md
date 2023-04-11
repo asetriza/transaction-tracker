@@ -50,7 +50,7 @@ make buildx
 - for post-processing worker which according to task should
 - every N minutes 10 latest odd records must be canceled and balance should be corrected by the application.
 - by default N is set to 1 minute
-- to set minutes go to cmd/cancel-transaction-worker/main.go where s.Every(<minutes>).Minute() <minutes> to N
+- to set minutes go to cmd/cancel-transaction-worker/main.go where s.Every($minutes).Minute() $minutes to N
 
 ```bash
 make buildxworker
