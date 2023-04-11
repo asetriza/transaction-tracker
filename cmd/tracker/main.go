@@ -10,6 +10,7 @@ import (
 	app "github.com/asetriza/transaction-tracker/internal/app/tracker"
 	models "github.com/asetriza/transaction-tracker/internal/models"
 	"github.com/asetriza/transaction-tracker/internal/repository/postgresql"
+	"github.com/asetriza/transaction-tracker/internal/usecase/account"
 	"github.com/asetriza/transaction-tracker/internal/usecase/tracker"
 
 	"go.uber.org/zap"
@@ -28,7 +29,8 @@ func main() {
 			return err
 		}
 		service := tracker.NewTracker(repo)
-		handler := rest.NewHandler(service)
+		accountService := account.NewAccount(repo)
+		handler := rest.NewHandler(service, accountService)
 		oasServer, err := models.NewServer(handler)
 		if err != nil {
 			return err

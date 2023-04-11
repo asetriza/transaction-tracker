@@ -4,22 +4,77 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
-	"time"
+	"log"
 
 	"github.com/asetriza/transaction-tracker/internal/domain"
-	"github.com/lib/pq"
 )
 
 func (p PostgreSQL) CreateTransaction(ctx context.Context, tr domain.Transaction) (domain.Transaction, error) {
-	query := `INSERT INTO transactions (transaction_id, account_id, state, amount, is_canceled, created_at) VALUES ($1, $2, $3, $4, $5, $6)`
+	// query := `INSERT INTO transactions (transaction_id, account_id, state, amount, is_canceled, created_at) VALUES ($1, $2, $3, $4, $5, $6)`
 
-	_, err := p.db.ExecContext(ctx, query, tr.TransactionID, tr.AccountID, tr.State, tr.Amount, tr.IsCanceled, time.Now())
+	// _, err := p.db.ExecContext(ctx, query, tr.TransactionID, tr.AccountID, tr.State, tr.Amount, tr.IsCanceled, time.Now())
+	// if err != nil {
+	// 	if pgErr, ok := err.(*pq.Error); ok {
+	// 		return domain.Transaction{}, fmt.Errorf("PostgreSQL error: %s", pgErr.Message)
+	// 	}
+	// 	return domain.Transaction{}, fmt.Errorf("database error: %s", err)
+	// }
+
+	tx, err := p.db.Begin()
 	if err != nil {
-		if pgErr, ok := err.(*pq.Error); ok {
-			return domain.Transaction{}, fmt.Errorf("PostgreSQL error: %s", pgErr.Message)
-		}
-		return domain.Transaction{}, fmt.Errorf("database error: %s", err)
+		return domain.Transaction{}, err
+	}
+
+	stmt, err := tx.Prepare("INSERT INTO transactions (transaction_id, account_id, state, amount, created_at) VALUES (?, ?, ?, ?, now())")
+	if err != nil {
+		return domain.Transaction{}, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(tr.TransactionID, tr.AccountID, tr.State, tr.Amount)
+	if err != nil {
+		tx.Rollback()
+		return domain.Transaction{}, err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		tx.Rollback()
+		return domain.Transaction{}, err
+	}
+
+	if rowsAffected != 1 {
+		tx.Rollback()
+		return domain.Transaction{}, err
+	}
+
+	stmt, err = tx.Prepare("UPDATE accounts SET balance = balance + ? WHERE id = ?")
+	if err != nil {
+		tx.Rollback()
+		return domain.Transaction{}, err
+	}
+	defer stmt.Close()
+
+	res, err = stmt.Exec(tr.Amount, tr.AccountID)
+	if err != nil {
+		tx.Rollback()
+		return domain.Transaction{}, err
+	}
+
+	rowsAffected, err = res.RowsAffected()
+	if err != nil {
+		tx.Rollback()
+		return domain.Transaction{}, err
+	}
+
+	if rowsAffected != 1 {
+		tx.Rollback()
+		return domain.Transaction{}, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	return tr, nil
@@ -85,6 +140,22 @@ func (r PostgreSQL) MarkAsCanceled(transaction domain.Transaction) error {
 	}
 
 	return nil
+}
+
+func (r PostgreSQL) CreateAccount(ctx context.Context, acc domain.Account) (domain.Account, error) {
+	stmt, err := r.db.PrepareContext(ctx, "INSERT INTO accounts (balance) VALUES (?) RETURNING id, balance")
+	if err != nil {
+		return domain.Account{}, err
+	}
+	defer stmt.Close()
+
+	account := domain.Account{}
+	err = stmt.QueryRowContext(ctx, acc.Balance).Scan(&account.ID, &account.Balance)
+	if err != nil {
+		return domain.Account{}, err
+	}
+
+	return account, nil
 }
 
 func (r PostgreSQL) FindById(id int) (domain.Account, error) {

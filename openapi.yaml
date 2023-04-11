@@ -41,6 +41,55 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /accounts:
+    post:
+      operationId: CreateAccount
+      summary: Creates a new account with a given balance
+      tags:
+        - Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - balance
+              properties:
+                balance:
+                  type: number
+                  example: 1000.0
+      responses:
+        '200':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - accountId
+                  - balance
+                properties:
+                  accountId:
+                    type: integer
+                    example: 1
+                  balance:
+                    type: number
+                    example: 1000.0
+        '400':
+          description: The request was invalid or missing required fields
+        '500':
+          description: An error occurred while processing the request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: An unexpected error occurred while processing the request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 components:
   schemas:

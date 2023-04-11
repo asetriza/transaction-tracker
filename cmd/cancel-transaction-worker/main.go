@@ -18,7 +18,7 @@ func main() {
 	}
 
 	s := gocron.NewScheduler(time.UTC)
-	account := account.NewAccountService(repo)
+	account := account.NewAccount(repo)
 	transaction := transaction.NewTransactionService(repo, account)
 
 	s.Every(3).Minute().Do(func() {
