@@ -1,4 +1,4 @@
-# Tracker App
+# Transaction Tracker
 
 ## Introduction
 
