@@ -53,7 +53,7 @@ make buildx
 - to set minutes go to cmd/cancel-transaction-worker/main.go where s.Every(<minutes>).Minute() <minutes> to N
 
 ```bash
-make buildx
+make buildxworker
 ```
 
 ### Running the App
