@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/asetriza/transaction-tracker/internal/domain"
@@ -19,15 +20,21 @@ func New(client postgresql.Client) accountRepo {
 }
 
 func (ar accountRepo) Create(ctx context.Context, acc domain.Account) (domain.Account, error) {
-	account := domain.Account{}
+	var id int
+	var balance float64
 	err := ar.DB.QueryRowContext(ctx, "INSERT INTO accounts (balance) VALUES ($1) RETURNING id, balance", acc.Balance).
-		Scan(&acc.ID, &acc.Balance)
+		Scan(&id, &balance)
 	if err != nil {
 		log.Println("query row error", err.Error())
 		return domain.Account{}, err
 	}
 
-	return account, nil
+	fmt.Println("new account", id, balance)
+
+	return domain.Account{
+		ID:      id,
+		Balance: balance,
+	}, nil
 }
 
 func (ar accountRepo) FindById(ctx context.Context, id int) (domain.Account, error) {
