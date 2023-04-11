@@ -36,7 +36,21 @@ make generate
 
 ### Building the app
 
-2. Then, we need to build an docker image to run it with docker-compose
+2. Then, we need to build 2 docker images to run it with docker-compose
+
+- for main tracker application which serves HTTP requests
+- to make a request to service you can use openapi.yaml specification
+- first create an account with specified balance
+- then create a transactions with specified account id from 1st stage
+
+```bash
+make buildx
+```
+
+- for post-processing worker which according to task should
+- every N minutes 10 latest odd records must be canceled and balance should be corrected by the application.
+- by default N is set to 1 minute
+- to set minutes go to cmd/cancel-transaction-worker/main.go where s.Every(<minutes>).Minute() <minutes> to N
 
 ```bash
 make buildx
